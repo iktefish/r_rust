@@ -1,0 +1,596 @@
+#+TITLE: notes_Rust
+* Contents :TOC_3:noexport:
+- [[#create-cargo-package][Create ~cargo~ package]]
+- [[#compilation][Compilation]]
+  - [[#cross-compilation][Cross compilation]]
+- [[#function-declaration][Function declaration]]
+- [[#nullnilundefined][Null/Nil/Undefined]]
+- [[#macros][Macros]]
+  - [[#panic][Panic]]
+- [[#statements][Statements]]
+- [[#expressions][Expressions]]
+- [[#interpolation][Interpolation]]
+- [[#mutability][Mutability]]
+- [[#types][Types]]
+  - [[#different-types][Different types]]
+    - [[#int-unsigned-int-float][Int, Unsigned Int, Float]]
+    - [[#char][Char]]
+    - [[#string][String]]
+    - [[#boolean][Boolean]]
+  - [[#type-annotation][Type annotation]]
+  - [[#specifying-types-in-function-parameter][Specifying types in function parameter]]
+- [[#enums][Enums]]
+- [[#collections][Collections]]
+  - [[#elements-to-variables][Elements to variables]]
+  - [[#tuple][Tuple]]
+    - [[#the-unit-tuple][The ~Unit~ tuple]]
+  - [[#struct][Struct]]
+
+* Create ~cargo~ package
+To create a new Rust project, enter the following command in your shell.
+
+#+begin_src shell :noeval
+cargo new $NameOfPackage --bin
+#+end_src
+
+* Compilation
+Unlike Java, Rust doesnt compile to bytecode and run on a VM. Instead Rust compiles
+directly to machine code or web assembly.
+** Cross compilation
+Currently Rust doesnt support cross compilation. This means if you are on
+Linux and want to compile for Windows, or vice-versa, you cant. You will
+have to compile the source code on the specific platform you want the binary
+to be executed in.
+* Function declaration
+NOTE:
++ All functions in Rust are required to specify a return type
+  (for ~fn main(){}~ check [[#the-unit-tuple][The ~Unit~ tuple]])
+
+#+begin_src rust
+fn main(){
+    println!("Hello World!");
+}
+#+end_src
+
+#+RESULTS:
+: Hello World!
+
+* Null/Nil/Undefined
+Rust doesnt possess the concept of ~null~, ~nil~, or ~undefined~.
+* Macros
+Macros a way to do something that works a bit like a function call, but rather
+than calling a function its doing come code transforation instead.
+
+NOTE:
++ Macros are almost always more powerful than functions with only one limitation,
+  they cannot be passed around like functions since they are evaluated at compile
+  time
++ There is performance difference between Macros and Functions but only at compile
+  time and not at runtime
+
+Macros end with ~!~.
+
+For example: the ~println!()~ takes the arguments we give it and translates
+them, at compile time, into some number of other function calls.
+
+#+begin_src rust
+fn main(){
+    let x = 5;
+    let y = 10;
+
+    println!("x plus y is {}", x + y);
+}
+#+end_src
+
+#+RESULTS:
+: x plus y is 15
+
+In the above code block, the ~println!()~ macro will allocate memory for the string,
+add the two variables, convert the integers into a string and concactenate the result
+to the string.
+** Panic
+To end the program. None of the code that comes after the ~panic()~ statement
+eill be executed.
+
+#+begin_src rust
+fn main() {
+    let crash_reason = "Server feels sleepy!!!";
+    panic!("Oooops! I crashed! {}", crash_reason);
+    println!("Hello there, I cant run");
+}
+#+end_src
+
+#+RESULTS:
+: thread 'main' panicked at 'Oooops! I crashed! Server feels sleepy!!!', src/main.rs:4:5
+
+* Statements
+A statement does not evaluate to a value. For example the ~println!()~
+macro doesnt evaluate to a value and is thus statement. Statements will
+end with ~;~.
+* Expressions
+An expression is something that always evaluates to a value.
+Below ~my_number > 1000~ is an expression that returns a boolean
+based on whether the expression is true or false.
+
+#+begin_src rust
+fn main() {
+    let my_number = 300;
+    println!("{}", my_number > 1000);
+}
+#+end_src
+
+#+RESULTS:
+: false
+
+NOTE:
+In ~some_variable > func(arg)~:
++ The variable ~some_variable~ is an expression
++ The argument ~arg~ is an expression
++ The function call ~func(arg)~ is an expression
+
+The distinction between expression and statement is important BCUZ the compiler
+can automatically return the last expression in a function. Remember to
+not put the ~;~ in the expression that the function is supposed to return.
+
+#+begin_src rust
+fn main() {
+    println!("With return statement {}",ret_product_of(10, 233));
+    println!("Without return statement {}",product_of(10, 233));
+}
+
+fn ret_product_of(x: i32, y: i32) -> i32 {
+    return x * y;
+}
+
+fn product_of(x: i32, y: i32) -> i32 {
+    x * y
+}
+#+end_src
+
+#+RESULTS:
+: With return statement 2330
+: Without return statement 2330
+
+* Interpolation
+NOTE:
++ Any expression can be interpolated
+
+Rust requires variables to be interpolated in order to print them out.
+
+#+begin_src rust
+fn main() {
+    let greeting = "Hello";
+    let subject = "World";
+
+    println!("{}, {}!", greeting, subject);
+}
+#+end_src
+
+#+RESULTS:
+: Hello, World!
+
+Format interpolated variables similar to the above code block but returns the output as a string.
+
+#+begin_src rust
+fn main() {
+    let subject = "World";
+    let greeting = format!("Hello, {}!", subject);
+
+    println!("{}", greeting);
+}
+#+end_src
+
+#+RESULTS:
+: Hello, World!
+
+* Mutability
+In Rust ~let~ works somewhat similarly to ~const~ in JavaScript. But unlike JavaScript,
+variables assigned with ~let~ cannot be reassigned nor can they be mutated.
+
+#+begin_src rust
+fn main() {
+    let x = 1.1;
+    x = 2.2;
+}
+#+end_src
+
+NOTE:
++ The point of immutable variables is "good programming practices" as they are less
+  error prone and easier for the coder to debug
+
+#+begin_src text
+  error[E0384]: cannot assign twice to immutable variable `x`
+  --> src/main.rs:4:5
+ |
+  3 |     let x = 1.1;
+ |         -
+ |         |
+ |         first assignment to `x`
+ |         help: consider making this binding mutable: `mut x`
+  4 |     x = 2.2;
+ |     ^^^^^^^ cannot assign twice to immutable variable
+#+end_src
+
+To mutate an immutable variable, we must use the ~mut~ keyword.
+
+#+begin_src rust
+fn main() {
+    let mut x = 1.1;
+    println!("Unchanged x -> {}", x);
+    x = 2.2;
+    println!("Changed x -> {}", x);
+}
+#+end_src
+
+#+RESULTS:
+: Unchanged x -> 1.1
+: Changed x -> 2.2
+
+* Types
+Rust is a *Static Type Checked* language similar to C++.
+
+Types assigned to a variable cannot be changed during runtime. Values can be
+changed but only so long as the new value if of the same type.
+
+#+begin_src rust :exports both
+fn main() {
+    let mut x = 2.2;
+    x = 3.1;
+    x = "Lets sneak in a stringgg";
+}
+#+end_src
+
+** Different types
+[[#int-unsigned-int-float][Int]]:
++ i8
++ i16
++ i32
++ i64
++ i128
+
+[[#int-unsigned-int-float][Unsigned Int]]:
++ u8
++ u16
++ u32
++ u64
++ u128
+
+[[#int-unsigned-int-float][Float]]:
++ f32
++ f64
+
+[[#char][Char]]:
++ char
+
+[[#string][String]]:
++ &str
+
+[[#boolean][Boolean]]
+*** Int, Unsigned Int, Float
+NOTE:
++ The ~x * y~ is multiplied using *Binary Multiplication* because *Arithmetic Multiplication*
+  requires a lot more overhead and will be a big performance hit.
+
+#+begin_src rust
+fn main() {
+    let x = 1.1;
+    let y = 2.2;
+
+    println!("x plus y is {}", x + y);
+    println!("x times y is {}", x * y);
+}
+#+end_src
+
+#+RESULTS:
+: x plus y is 3.3000000000000003
+: x times y is 2.4200000000000004
+
+NOTE:
++ 32bit floats/ints/unsigned ints take half as much memory as 64bit
++ 64bit floats/ints/unsigned ints are twice as precise as 32 bit
+
+#+begin_src rust
+fn main() {
+    let y: f32 = 10.0/3.0;
+    println!("{}", y);
+
+    let x: f64 = 10.0/3.0;
+    println!("{}", x);
+}
+#+end_src
+
+#+RESULTS:
+: 3.3333333
+: 3.3333333333333335
+
+We integers can be negative. And we can put seperators in our numarical values
+for any of the three numeric types using ~_~. This is for syntactic convenience
+and is read by the compiler as whitespaces that it will remove.
+
+#+begin_src rust
+fn main() {
+    let negative_five: i32 = -5;
+    let one_million: i32 = 1_000_000;
+
+    println!("negative_five -> {}\none_million -> {}", negative_five, one_million);
+}
+#+end_src
+
+#+RESULTS:
+: negative_five -> -5
+: one_million -> 1000000
+
+Arithmetic operation on integers will DISCARD any potential decimal values not
+round them up/down.
+
+#+begin_src rust
+fn main() {
+    let exactly_three = 10/3;
+    println!("{}", exactly_three);
+}
+#+end_src
+
+#+RESULTS:
+: 3
+
+If demoninator in a division operation is 0, then compiler will [[Panic][panic]]. Make
+sure to prove a conditional to handle this case if you are not sure if
+denominator results to 0.
+
+#+begin_src rust
+fn main() {
+    let poof = 33/0;
+    println!("{}", poof);
+}
+#+end_src
+
+#+begin_src text
+ error: this operation will panic at runtime
+  --> src/main.rs:3:16
+  |
+ 3 |     let poof = 33/0;
+  |                ^^^^ attempt to divide `33_i32` by zero
+  |
+   = note: `#[deny(unconditional_panic)]` on by default
+#+end_src
+
+Dividing a float by 0 gives us infinity. This is because *Binary Divition* operation
+is done on floats instead of *Arithmetic Division*.
+
+#+begin_src rust
+fn main() {
+    let float_by_zero: f32 = 33.0/0.0;
+    println!("{}", float_by_zero);
+}
+#+end_src
+
+#+RESULTS:
+: inf
+
+**** Convert numeric types
+To convert a numeric type into another we use the ~as~ keyword.
+
+#+begin_src rust
+fn main() {
+    println!("{}", multiply(-3, 5));
+}
+
+fn multiply (x: i32, y: u32) -> i32{
+    // return x * y;
+    return x * (y as i32);
+}
+#+end_src
+
+#+RESULTS:
+: -15
+
+*** Char
+A ~char~ is a ~u32~ that has been Unicode validated.
+*** String
+*** Boolean
+Booleans can be converted to ~u8~ using ~as~ because behind the scenes a boolean
+is an 8 bit unsigned int. This is done because even though theoretically a
+boolean can be represented in 1 bit, there are no such hardware with that precision
+therefore booleans are instead represented by 1 byte.
+
+#+begin_src rust
+fn main() {
+    let truth_behind_true = true as u8;
+    let truth_behind_false = false as u8;
+
+    println!("True -> {}", truth_behind_true);
+    println!("False -> {}", truth_behind_false);
+}
+#+end_src
+
+#+RESULTS:
+: True -> 1
+: False -> 0
+
+**** Conditionals
+The syntax for ~if{}~ ~else if{}~ ~else{}~ statements are as follows:
+
+#+begin_src rust
+fn main() {
+    let x = 1;
+
+    if x == 1 {
+        println!("x is 1");
+    } else if x == 2 {
+        println!("x is 2");
+    } else {
+        println!("x is something else");
+    }
+}
+#+end_src
+
+#+RESULTS:
+: x is 1
+
+These conditionals can be used to return a value.
+
+NOTE:
++ If you dont understand whats happenning look at [[Expressions][Expressions]]
++ Both ~if{}~ and ~else{}~ must be given otherwise program wont compile
++ When ~if{}~ is used this way, its very similar to ternary operators in other
+  languages
+
+#+begin_src rust
+fn main() {
+    let msg = if 5 > 1 {
+        "Duh 5 is obviously greater than 1 genius!"
+    } else {
+        "Impossible outcome lol!"
+    };
+    println!("{}", msg);
+}
+#+end_src
+
+#+RESULTS:
+: Duh 5 is obviously greater than 1 genius!
+
+** Type annotation
+We can be explicit about what a type a variable will be. For f64 this is done
+with the following syntax ~: f64~.
+
+Its not mandatory but good practice to do so.
+
+NOTE:
++ Rust does not have the ~any~ type that Python does
++ Rust does not have inheritance unlike C++
++ We can have a collection of multiple types using [[#enums][Enums]]
+
+#+begin_src rust
+fn main() {
+    let x: f64 = 2.2;
+
+    println!("x is {}", x)
+}
+#+end_src
+
+#+RESULTS:
+: x is 2.2
+
+** Specifying types in function parameter
+We ALWAYS have to write out the type annotations for parameters when defining
+functions.
+
+We ALWAYS have to write out the return type of the function if said funtion returns an value. For f64 this is done
+with the following syntax ~fn NAME() -> f64{}~.
+
+#+begin_src rust
+fn main() {
+    let answer = multiply_both(1.1, 3.3);
+    println!("Answer is {}", answer);
+}
+
+fn multiply_both(param_1: f64, param_2: f64) -> f64{
+    return param_1 * param_2;
+}
+#+end_src
+
+#+RESULTS:
+: Answer is 3.63
+
+* Enums
+* Collections
+Collections can hold multiple variables.
+** Elements to variables
+Rust has a convenient way of assigning elements of collentions to variables:
+
+#+begin_src rust
+fn main() {
+    let point: (i32, i32) = (3, 5);
+
+    let x = point.0;
+    let y = point.1;
+
+    println!("x is {}, y is {}", x, y);
+
+    let (a, b) = point;
+
+    println!("a is {}, y is {}", a, b);
+}
+#+end_src
+
+#+RESULTS:
+: x is 3, y is 5
+: a is 3, y is 5
+
+For elements of collection that we dont want to assign we use the ~_~.
+
+#+begin_src rust
+fn main() {
+    let point: (i32, i32) = (3, 5);
+    let (a, _) = point;
+
+    println!("a is {}", a);
+}
+#+end_src
+
+#+RESULTS:
+: a is 3
+
+** Tuple
+Tuples are collections that can hold multiple datatypes in it.
+Tuples can't change element at runtime, their size are always fixed.
+
+#+begin_src rust
+fn main() {
+    let point: (u64, &str) = (3, "Hello");
+
+    let index_0 = point.0;
+    let index_1 = point.1;
+
+    println!("index_0 is {}\nindex_1 is {}", index_0, index_1);
+}
+#+end_src
+
+#+RESULTS:
+: index_0 is 3
+: index_1 is Hello
+
+*** The ~Unit~ tuple
+Since tuples size cannot be changed at runtime, if we define an
+empty tuple it will always be empty.
+
+NOTE:
+Uses of this tuple:
++ If a function has no return value, such a tuple is returned
++ the ~fn main(){}~ function also uses this method in order to have
+  no return value
+
+#+begin_src rust
+fn main() -> () {
+    //let unit: () = ();
+}
+#+end_src
+
+** Struct
+NOTE:
++ When naming structs always use camel case
+
+#+begin_src rust
+struct Point {
+    x: i32,
+    y: i16,
+    z: i8,
+}
+fn main() {
+    let my_point: Point = Point {x: 11, y: 9, z: 7};
+
+    println!("{}, {}, {}", my_point.x, my_point.y, my_point.z);
+    // new_point(11, 9, 7);
+    // let var_x = point::x;
+    // println!("{}", var_x)
+}
+
+// fn new_point(x: i32, y: i16, z: i8) -> Point {
+//     point{x: x, y: y, z: z}
+// }
+
+#+end_src
+
+#+begin_src text
+error: Could not compile `cargoBPbvqc`.
+#+end_src
