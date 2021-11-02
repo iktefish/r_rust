@@ -19,13 +19,15 @@
     - [[#boolean][Boolean]]
   - [[#type-annotation][Type annotation]]
   - [[#specifying-types-in-function-parameter][Specifying types in function parameter]]
-- [[#enums][Enums]]
 - [[#collections][Collections]]
   - [[#elements-to-variables][Elements to variables]]
   - [[#tuple][Tuple]]
     - [[#the-unit-tuple][The ~Unit~ tuple]]
   - [[#arrays][Arrays]]
   - [[#struct][Struct]]
+- [[#enums][Enums]]
+- [[#pattern-matching][Pattern Matching]]
+- [[#methods][Methods]]
 
 * Create ~cargo~ package
 To create a new Rust project, enter the following command in your shell.
@@ -265,6 +267,7 @@ fn main() {
 
 [[#string][String]]:
 + &str
++ String
 
 [[#boolean][Boolean]]
 *** Int, Unsigned Int, Float
@@ -493,10 +496,11 @@ fn multiply_both(param_1: f64, param_2: f64) -> f64{
 #+RESULTS:
 : Answer is 3.63
 
-* Enums
 * Collections
 Collections can hold multiple variables. Collections in memory (in Rust) are
 represented as tuples. They have no overhead/extra-metadata similar to Assembly.
+Not all collections can be iterated over as not all of them have the ~iter()~ method
+implemented.
 ** Elements to variables
 Rust has a convenient way of assigning elements of collentions to variables:
 
@@ -637,7 +641,81 @@ fn main() {
 : x --> 11
 : z --> 3
 : y --> 555
+* Enums
+Unlike structs, enums allow variants of a specific
+type.
 
-#+begin_src text
-error: Could not compile `cargoBPbvqc`.
+For example:
+
+#+begin_src rust
+enum Color {                   // type
+    Green,                      // variant
+    Yellow,                     // variant
+    Blue,                       // variant
+}
+
+let go = Color::Green;
+let stop = Color::Red;
+let slow_down = Color::Yellow;
+#+end_src
+
+We can have structs and/or tuples in Enum values like so:
+
+#+begin_src rust
+enum Color {                   // type
+    Green,                      // variant
+    Yellow,                     // variant
+    Blue,                       // variant
+    my_struct { x: i16, y: i16, z: String },
+    my_tuple (i8, i8, i8),
+}
+
+let go = Color::Green;
+let stop = Color::Red;
+let slow_down = Color::Yellow;
+let my_struct = Color::my_struct {x: 10, y: 100:, z: 33},
+let my_tuple = Color::my_tuple (11, 23, 124),
+#+end_src
+
+* Pattern Matching
+Is similar (but different) to a ~switch~ keyword from JavaScript. Rust uses the ~match~ keyword.
+
+#+begin_src rust
+let current_color = Color::Yellow;
+
+match current_color {
+    Color::Green => {
+        println!("Its green");
+    }
+    Color::Yellow => {
+        println!("Its yellow");
+    }
+    _ => {
+        println!("Its none of these");
+    }
+}
+#+end_src
+
+While pattern matching an enum, we must specify cases for all the variants otherwise the code
+wont compile. We can alleviate this by using something called *catch-all case*, denoted by ~_~
+as shown in the code snippet above.
+* Methods
+
+#+begin_src rust
+enum Color {                   // type
+    Green,                      // variant
+    Yellow,                     // variant
+    Blue,                       // variant
+    my_struct { x: i16, y: i16, z: String },
+    my_tuple (i8, i8, i8),
+}
+
+impl Color {
+    fn rgb(color: Color) -> (u8, u8, u8) {
+
+    }
+    fn new(r: u8, g: u8, b: u8) -> Color {
+
+    }
+}
 #+end_src
