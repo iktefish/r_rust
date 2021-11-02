@@ -24,6 +24,7 @@
   - [[#elements-to-variables][Elements to variables]]
   - [[#tuple][Tuple]]
     - [[#the-unit-tuple][The ~Unit~ tuple]]
+  - [[#arrays][Arrays]]
   - [[#struct][Struct]]
 
 * Create ~cargo~ package
@@ -494,7 +495,8 @@ fn multiply_both(param_1: f64, param_2: f64) -> f64{
 
 * Enums
 * Collections
-Collections can hold multiple variables.
+Collections can hold multiple variables. Collections in memory (in Rust) are
+represented as tuples. They have no overhead/extra-metadata similar to Assembly.
 ** Elements to variables
 Rust has a convenient way of assigning elements of collentions to variables:
 
@@ -532,8 +534,8 @@ fn main() {
 : a is 3
 
 ** Tuple
-Tuples are collections that can hold multiple datatypes in it.
-Tuples can't change element at runtime, their size are always fixed.
+Tuples are collections that can hold different datatypes in it.
+Tuples can't change number of element at runtime, their size are always fixed.
 
 #+begin_src rust
 fn main() {
@@ -566,7 +568,37 @@ fn main() -> () {
 }
 #+end_src
 
+** Arrays
+Arrays are the only one of the three collections that can be iterated over and must
+have a consistent element data type.
+
+#+begin_src rust
+fn main() {
+    let my_array: [u32; 5] = [3, 55, 21, 53, 78];
+    println!("idx_0 --> {}", my_array[0]);
+    println!("idx_4 --> {}", my_array[4]);
+
+    // Iterating over an array
+    let mut counter = 0;
+    for _i in my_array.iter() {
+        println!("Index no. {} --> {}", counter, my_array[counter]);
+        counter = counter + 1;
+    };
+}
+#+end_src
+
+#+RESULTS:
+: idx_0 --> 3
+: idx_4 --> 78
+: Index no. 0 --> 3
+: Index no. 1 --> 55
+: Index no. 2 --> 21
+: Index no. 3 --> 53
+: Index no. 4 --> 78
+
 ** Struct
+Structs are named as opposed to indexed like Tuples/Arrays. They
+can have different datatypes.
 NOTE:
 + When naming structs always use camel case
 
@@ -576,10 +608,19 @@ struct Point {
     y: i16,
     z: i8,
 }
+
 fn main() {
     let my_point: Point = Point {x: 11, y: 9, z: 7};
 
     println!("{}, {}, {}", my_point.x, my_point.y, my_point.z);
+
+    let mut new_point: Point = Point {x: 11, y: 9, z: 3};
+    println!("x --> {}", new_point.x);
+    println!("z --> {}", new_point.z);
+    // Changing value of ~y~
+    new_point.y = 555;
+    println!("y --> {}", new_point.y);
+
     // new_point(11, 9, 7);
     // let var_x = point::x;
     // println!("{}", var_x)
@@ -590,6 +631,12 @@ fn main() {
 // }
 
 #+end_src
+
+#+RESULTS:
+: 11, 9, 7
+: x --> 11
+: z --> 3
+: y --> 555
 
 #+begin_src text
 error: Could not compile `cargoBPbvqc`.
