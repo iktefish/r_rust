@@ -641,8 +641,9 @@ fn main() {
 : x --> 11
 : z --> 3
 : y --> 555
+
 ** Vector
-Vectors , like Arrays, require type specification for every element. But unlike
+Vectors, like Arrays, require type specification for every element. But unlike
 Arrays, length of Vectors are not hardcoded.
 
 #+begin_src rust
