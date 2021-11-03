@@ -28,6 +28,8 @@
 - [[#enums][Enums]]
 - [[#pattern-matching][Pattern Matching]]
 - [[#methods][Methods]]
+- [[#option][Option]]
+- [[#result][Result]]
 
 * Create ~cargo~ package
 To create a new Rust project, enter the following command in your shell.
@@ -77,7 +79,7 @@ For example: the ~println!()~ takes the arguments we give it and translates
 them, at compile time, into some number of other function calls.
 
 #+begin_src rust
-fn main(){
+fn main() {
     let x = 5;
     let y = 10;
 
@@ -379,7 +381,7 @@ fn main() {
     println!("{}", multiply(-3, 5));
 }
 
-fn multiply (x: i32, y: u32) -> i32{
+fn multiply (x: i32, y: u32) -> i32 {
     // return x * y;
     return x * (y as i32);
 }
@@ -488,13 +490,10 @@ fn main() {
     println!("Answer is {}", answer);
 }
 
-fn multiply_both(param_1: f64, param_2: f64) -> f64{
+fn multiply_both(param_1: f64, param_2: f64) -> f64 {
     return param_1 * param_2;
 }
 #+end_src
-
-#+RESULTS:
-: Answer is 3.63
 
 * Collections
 Collections can hold multiple variables. Collections in memory (in Rust) are
@@ -719,3 +718,53 @@ impl Color {
     }
 }
 #+end_src
+
+* Option
+Option is an enum with the following declaration:
+
+#+begin_src rust
+enum Option<T> {
+    None,
+    Some(T),                    // the (T) is the payload
+}
+#+end_src
+
+We have to put the type of our option in place of ~<T>~.
+
+#+begin_src rust
+let email: Option<String> = Some(email_str);
+#+end_src
+
+NOTE:
++ Whatever we put in the ~<T>~ can be used by the corresponding
+  variants of the enum
++ We don't have to namespace Options
+* Result
+Result is similar to Option (which are possible absense of a value)
+but represents an operation that could have failed.
+
+#+begin_src rust
+enum Result<O, E> {
+    Ok(O),
+    Err(E),                    // the (E) is the payload
+}
+#+end_src
+
+Look at the codeblock below, it reads like:
++ ~success~ is an enum, and if operation succeeds then return
+  back 42, because of ~Ok(42)~
++ ~failure~ is an enum, and if operation fails then return
+  back a string, because of ~Err(str)~
+
+#+begin_src rust
+enum Result<O, E> {
+    Ok(O),
+    Err(E),                    // the (E) is the payload
+}
+
+let success: Result<i64, String> = Ok(43);
+let failure: Result<i64, String> = Err(str);
+#+end_src
+
+NOTE:
++ We don't have to namespace Result
