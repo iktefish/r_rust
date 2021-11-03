@@ -25,6 +25,7 @@
     - [[#the-unit-tuple][The ~Unit~ tuple]]
   - [[#arrays][Arrays]]
   - [[#struct][Struct]]
+  - [[#vector][Vector]]
 - [[#enums][Enums]]
 - [[#pattern-matching][Pattern Matching]]
 - [[#methods][Methods]]
@@ -640,6 +641,58 @@ fn main() {
 : x --> 11
 : z --> 3
 : y --> 555
+** Vector
+Vectors , like Arrays, require type specification for every element. But unlike
+Arrays, length of Vectors are not hardcoded.
+
+#+begin_src rust
+let years_vec: Vec<i32> = vec![1995, 1998, 2000];
+#+end_src
+
+We can ~push()~ new elements into a vector and we can ~pop()~ elements out of a vector and
+call its length via ~len()~:
+
+#+begin_src rust
+fn main() {
+    let years_vec: Vec<i32> = vec![1995, 1998, 2000];
+    println!("Index 0 --> {}", years_vec[0]);
+    println!("Length --> {}", years_vec.len());
+
+    // NOTE: push() and pop() mutated vectors
+    let mut years_vec_mutable: Vec<i32> = vec![1995, 1998, 2000];
+    // push()
+    years_vec_mutable.push(2021);
+    println!("Length post push() --> {}", years_vec_mutable.len());
+    println!("Index 2 post push() --> {}", years_vec_mutable[2]);
+    println!("Index 3 post push() --> {}", years_vec_mutable[3]);
+    // pop()
+    years_vec_mutable.pop();
+    println!("Length post pop() --> {}", years_vec_mutable.len());
+    println!("Index 0 post pop() --> {}", years_vec_mutable[0]);
+    println!("Index 1 post pop() --> {}", years_vec_mutable[1]);
+    // println!("Index 2 --> {}", years_vec_mutable[2]); // This is out of bounds because I popped it
+}
+#+end_src
+
+#+RESULTS:
+: Index 0 --> 1995
+: Length --> 3
+: Length post-pop() --> 4
+: Index 2 --> 2000
+: Index 3 --> 2021
+: Length post-pop() --> 3
+: Index 0 --> 1995
+: Index 1 --> 1998
+
+NOTE:
+The return value of the ~len()~ is ~usize~. ~usize~ is either a ~u32~ or ~u64~ or
+any other unsigned-int sizes depending on the system the code is being compiled for.
+
+#+begin_src rust
+let years_vec: Vec<i32> = vec![1995, 1998, 2000];
+let length: usize = years_vec.len();
+#+end_src
+
 * Enums
 Unlike structs, enums allow variants of a specific
 type.
