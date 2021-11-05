@@ -25,12 +25,21 @@
     - [[#the-unit-tuple][The ~Unit~ tuple]]
   - [[#arrays][Arrays]]
   - [[#struct][Struct]]
-  - [[#vector][Vector]]
 - [[#enums][Enums]]
+  - [[#vector][Vector]]
 - [[#pattern-matching][Pattern Matching]]
 - [[#methods][Methods]]
 - [[#option][Option]]
 - [[#result][Result]]
+- [[#memory][Memory]]
+  - [[#stack][Stack]]
+  - [[#garbage][Garbage]]
+- [[#manual-memory-management][Manual Memory Management]]
+- [[#automatic-memory-management][Automatic Memory Management]]
+- [[#cloning][Cloning]]
+- [[#ownership][Ownership]]
+- [[#borrowing][Borrowing]]
+- [[#lifetimes][Lifetimes]]
 
 * Create ~cargo~ package
 To create a new Rust project, enter the following command in your shell.
@@ -642,6 +651,42 @@ fn main() {
 : z --> 3
 : y --> 555
 
+* Enums
+Unlike structs, enums allow variants of a specific
+type.
+
+For example:
+
+#+begin_src rust
+enum Color {                   // type
+    Green,                      // variant
+    Yellow,                     // variant
+    Blue,                       // variant
+}
+
+let go = Color::Green;
+let stop = Color::Red;
+let slow_down = Color::Yellow;
+#+end_src
+
+We can have structs and/or tuples in Enum values like so:
+
+#+begin_src rust
+enum Color {                   // type
+    Green,                      // variant
+    Yellow,                     // variant
+    Blue,                       // variant
+    my_struct { x: i16, y: i16, z: String },
+    my_tuple (i8, i8, i8),
+}
+
+let go = Color::Green;
+let stop = Color::Red;
+let slow_down = Color::Yellow;
+let my_struct = Color::my_struct {x: 10, y: 100:, z: 33},
+let my_tuple = Color::my_tuple (11, 23, 124),
+#+end_src
+
 ** Vector
 Vectors, like Arrays, require type specification for every element. But unlike
 Arrays, length of Vectors are not hardcoded.
@@ -692,42 +737,6 @@ any other unsigned-int sizes depending on the system the code is being compiled 
 #+begin_src rust
 let years_vec: Vec<i32> = vec![1995, 1998, 2000];
 let length: usize = years_vec.len();
-#+end_src
-
-* Enums
-Unlike structs, enums allow variants of a specific
-type.
-
-For example:
-
-#+begin_src rust
-enum Color {                   // type
-    Green,                      // variant
-    Yellow,                     // variant
-    Blue,                       // variant
-}
-
-let go = Color::Green;
-let stop = Color::Red;
-let slow_down = Color::Yellow;
-#+end_src
-
-We can have structs and/or tuples in Enum values like so:
-
-#+begin_src rust
-enum Color {                   // type
-    Green,                      // variant
-    Yellow,                     // variant
-    Blue,                       // variant
-    my_struct { x: i16, y: i16, z: String },
-    my_tuple (i8, i8, i8),
-}
-
-let go = Color::Green;
-let stop = Color::Red;
-let slow_down = Color::Yellow;
-let my_struct = Color::my_struct {x: 10, y: 100:, z: 33},
-let my_tuple = Color::my_tuple (11, 23, 124),
 #+end_src
 
 * Pattern Matching
@@ -822,3 +831,73 @@ let failure: Result<i64, String> = Err(str);
 
 NOTE:
 + We don't have to namespace Result
+
+* Memory
+The memory is a group of bits in sequential order.
+We often choose to interpret it as an array of bytes (8 bits) as shown in the
+diagram below:
+
+[[./img/memory.png]]
+
+** Stack
+Stack in a segment of memory that is used as a pathway for passing around values
+to functions. A global counter ~stack_length~ is also noted for reasons we will
+see later. Lets look at the function defined below:
+
+#+begin_src rust
+fn increment_decrement(num: u8) {
+    print_nums(num + 1, num - 1);
+}
+
+fn print_nums(x: u8, y: u8) { ... }
+
+fn main() {
+    increment_decrement(42);
+}
+#+end_src
+
+When the ~increment_decrement()~ is called with the arg ~42~, the 0th index of the stack
+gets populated with the value 42.
+
+*Stack index*:
+| 0 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+*Current Stack length*: 1
+*Stack value in corresponding index*:
+| 42 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+
+When ~increment_decrement()~ executes, it knows where the argument is located in the stack
+by pulling it out of memory like this: ~stack_bytes[stack_length - 1]~.
+
+Now the value ~42~ is passed into ~print_nums()~ but is done as two seperate args, namely:
+~42 + 1~ and ~42 - 1~. Therefore the stack will be populated with ~43~ and ~41~ in the following
+expty index past ~index 0~.
+
+*Stack index*:
+| 0 | 1 | 2 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+*Current stack length*: 3
+*Stack value in corresponding index*:
+| 42 | 43 | 41 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+
+The values are passed into ~print_nums()~, which finds the location of the values (43 and 41)
+in the stack by: ~stack_bytes[stack_length - 2]~ and ~stack_bytes[stack_length - 3]~ respectively.
+
+NOTE:
+If ~increment_decrement()~ returned a value then it'll reserve a a slot in the stack for
+that value prior to argument being taken into the parameter, for example:
+
+*Stack index*:
+| 0 | 1 | 2 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+*Current stack length*: 3
+*Stack value in corresponding index*:
+| /reserved/ | 42 | 43 | 41 |   |   |   |   |   |   |   |   |   |   |   |   |   |
+
+** Garbage
+Once the execution is finished, the ~stack_length~ is set back to ~0~. Any values that
+may be present in the un-indexed stack are no longer used, they are called *Garbage*.
+
+* Manual Memory Management
+* Automatic Memory Management
+* Cloning
+* Ownership
+* Borrowing
+* Lifetimes
