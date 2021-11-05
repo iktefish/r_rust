@@ -25,8 +25,8 @@
     - [[#the-unit-tuple][The ~Unit~ tuple]]
   - [[#arrays][Arrays]]
   - [[#struct][Struct]]
-- [[#enums][Enums]]
   - [[#vector][Vector]]
+- [[#enums][Enums]]
 - [[#pattern-matching][Pattern Matching]]
 - [[#methods][Methods]]
 - [[#option][Option]]
@@ -34,6 +34,7 @@
 - [[#memory][Memory]]
   - [[#stack][Stack]]
   - [[#garbage][Garbage]]
+  - [[#heap][Heap]]
 - [[#manual-memory-management][Manual Memory Management]]
 - [[#automatic-memory-management][Automatic Memory Management]]
 - [[#cloning][Cloning]]
@@ -651,45 +652,12 @@ fn main() {
 : z --> 3
 : y --> 555
 
-* Enums
-Unlike structs, enums allow variants of a specific
-type.
-
-For example:
-
-#+begin_src rust
-enum Color {                   // type
-    Green,                      // variant
-    Yellow,                     // variant
-    Blue,                       // variant
-}
-
-let go = Color::Green;
-let stop = Color::Red;
-let slow_down = Color::Yellow;
-#+end_src
-
-We can have structs and/or tuples in Enum values like so:
-
-#+begin_src rust
-enum Color {                   // type
-    Green,                      // variant
-    Yellow,                     // variant
-    Blue,                       // variant
-    my_struct { x: i16, y: i16, z: String },
-    my_tuple (i8, i8, i8),
-}
-
-let go = Color::Green;
-let stop = Color::Red;
-let slow_down = Color::Yellow;
-let my_struct = Color::my_struct {x: 10, y: 100:, z: 33},
-let my_tuple = Color::my_tuple (11, 23, 124),
-#+end_src
-
 ** Vector
-Vectors, like Arrays, require type specification for every element. But unlike
+Vector, like Arrays, require type specification for every element. But unlike
 Arrays, length of Vectors are not hardcoded.
+
+NOTE:
+Vectors and Arrays are vastly different, look at [[Memory]] for details.
 
 #+begin_src rust
 let years_vec: Vec<i32> = vec![1995, 1998, 2000];
@@ -737,6 +705,42 @@ any other unsigned-int sizes depending on the system the code is being compiled 
 #+begin_src rust
 let years_vec: Vec<i32> = vec![1995, 1998, 2000];
 let length: usize = years_vec.len();
+#+end_src
+
+* Enums
+Unlike structs, enums allow variants of a specific
+type.
+
+For example:
+
+#+begin_src rust
+enum Color {                   // type
+    Green,                      // variant
+    Yellow,                     // variant
+    Blue,                       // variant
+}
+
+let go = Color::Green;
+let stop = Color::Red;
+let slow_down = Color::Yellow;
+#+end_src
+
+We can have structs and/or tuples in Enum values like so:
+
+#+begin_src rust
+enum Color {                   // type
+    Green,                      // variant
+    Yellow,                     // variant
+    Blue,                       // variant
+    my_struct { x: i16, y: i16, z: String },
+    my_tuple (i8, i8, i8),
+}
+
+let go = Color::Green;
+let stop = Color::Red;
+let slow_down = Color::Yellow;
+let my_struct = Color::my_struct {x: 10, y: 100:, z: 33},
+let my_tuple = Color::my_tuple (11, 23, 124),
 #+end_src
 
 * Pattern Matching
@@ -861,7 +865,9 @@ gets populated with the value 42.
 
 *Stack index*:
 | 0 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+
 *Current Stack length*: 1
+
 *Stack value in corresponding index*:
 | 42 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
 
@@ -874,7 +880,9 @@ expty index past ~index 0~.
 
 *Stack index*:
 | 0 | 1 | 2 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+
 *Current stack length*: 3
+
 *Stack value in corresponding index*:
 | 42 | 43 | 41 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
 
@@ -887,13 +895,73 @@ that value prior to argument being taken into the parameter, for example:
 
 *Stack index*:
 | 0 | 1 | 2 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+
 *Current stack length*: 3
+
 *Stack value in corresponding index*:
 | /reserved/ | 42 | 43 | 41 |   |   |   |   |   |   |   |   |   |   |   |   |   |
+
+The number of slots reserved will depend on the size which must be known during compile time.
 
 ** Garbage
 Once the execution is finished, the ~stack_length~ is set back to ~0~. Any values that
 may be present in the un-indexed stack are no longer used, they are called *Garbage*.
+** Heap
+The Heap is another regieon of memory that is essentially a giant bucket of states.
+It's used as a helper for Stack where the Stack can store data that are not static
+in size.
+
+Similar to the funtion in [[Stack]], but imagine the following:
+
+#+begin_src rust
+fn some_action(num: u8) -> Vec<u8> { ... }
+
+let nums = some_action(30);
+#+end_src
+
+We have a chicked-and-egg problem here as the space for the returned value is reserved
+during function call but it's impossible to know the size of the Vector before the instructions
+that will eventually create the Vector finishes executing.
+
+Datatypes that take dynamic space in memory have a /metadata/ struct associated with them that
+holds the following values:
++ first_elem_index: usize
++ length: usize
++ capacity: usize
+
+With the above detail in mind lets look at the following vector:
+
+#+begin_src rust
+let nums = vec![1, 2, 3];
+#+end_src
+
+Here the ~first_elem_index~ will be the index of the location in Heap where the first element
+is stored. The ~length~ will be ~3~, since the vector has a length of 3.
+
+*Heap*:
+| ... | ... | ... | ... | ... | v | v | v | ...  | ... | ...  | ... | ... |
+| ... | 234 | 111 | 390 | 32  | 1 | 2 | 3 | 3098 | 123 | 2123 | 890 | ... |
+| ... | ... | ... | ... | ... | ^ | ^ | ^ | ...  | ... | ...  | ... | ... |
+
+NOTE:
+If we want to ~push()~ a new value into ~nums~ then it may fail since the slot after the
+last element of num is maybe populated by a value from another function/thread. When a situation
+like this occurrs, the rust-runtime-system will move the entire vector to a different region in
+the Heap. This has significant performance cost. We can specify how much space should be initially
+allocated in the Heap using the ~capacity~ field in the /metadata/ struct like so:
+
+#+begin_src rust
+let nums = Vec::with_capacity(5);
+#+end_src
+
+This way the Head will look like this:
+*Heap*:
+| ... | ... | ... | ... | ... | v | v | v | v          | v          | ...  | ... | ...  | ... | ... |
+| ... | 234 | 111 | 390 | 32  | 1 | 2 | 3 | /reserved/ | /reserved/ | 3098 | 123 | 2123 | 890 | ... |
+| ... | ... | ... | ... | ... | ^ | ^ | ^ | ^          | ^          | ...  | ... | ...  | ... | ... |
+
+This miminizes the instance where the program will do the performance-expensive reallocation of the
+entire datatructure on the Heap.
 
 * Manual Memory Management
 * Automatic Memory Management
