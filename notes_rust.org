@@ -956,9 +956,9 @@ let nums = Vec::with_capacity(5);
 
 This way the Head will look like this:
 *Heap*:
-| ... | ... | ... | ... | ... | v | v | v | v          | v          | ...  | ... | ...  | ... | ... |
-| ... | 234 | 111 | 390 | 32  | 1 | 2 | 3 | /reserved/ | /reserved/ | 3098 | 123 | 2123 | 890 | ... |
-| ... | ... | ... | ... | ... | ^ | ^ | ^ | ^          | ^          | ...  | ... | ...  | ... | ... |
+|     |     |     |     |    | v | v | v | v          | v          |      |     |      |     |     |
+| ... | 234 | 111 | 390 | 32 | 1 | 2 | 3 | /reserved/ | /reserved/ | 3098 | 123 | 2123 | 890 | ... |
+|     |     |     |     |    | ^ | ^ | ^ | ^          | ^          |      |     |      |     |     |
 
 This miminizes the instance where the program will do the performance-expensive reallocation of the
 entire datatructure on the Heap.
