@@ -939,9 +939,9 @@ Here the ~first_elem_index~ will be the index of the location in Heap where the 
 is stored. The ~length~ will be ~3~, since the vector has a length of 3.
 
 *Heap*:
-| ... | ... | ... | ... | ... | v | v | v | ...  | ... | ...  | ... | ... |
-| ... | 234 | 111 | 390 | 32  | 1 | 2 | 3 | 3098 | 123 | 2123 | 890 | ... |
-| ... | ... | ... | ... | ... | ^ | ^ | ^ | ...  | ... | ...  | ... | ... |
+|     |     |     |     |    | v | v | v |      |     |      |     |     |
+| ... | 234 | 111 | 390 | 32 | 1 | 2 | 3 | 3098 | 123 | 2123 | 890 | ... |
+|     |     |     |     |    | ^ | ^ | ^ |      |     |      |     |     |
 
 NOTE:
 If we want to ~push()~ a new value into ~nums~ then it may fail since the slot after the
